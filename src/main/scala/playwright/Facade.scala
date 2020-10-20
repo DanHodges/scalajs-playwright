@@ -24,23 +24,18 @@ object Facade {
   }
 
   @js.native
-  @JSImport("playwright", "LaunchOptions")
-  class LaunchOptions extends js.Object {
-    var _videosPath: js.UndefOr[String]      = js.native
-    var args: js.UndefOr[js.Array[String]]   = js.native
-    var chromiumSandbox: js.UndefOr[Boolean] = js.native
-    var devtools: js.UndefOr[Boolean]        = js.native
-    var downloadsPath: js.UndefOr[String]    = js.native
-    //    var env: js.UndefOr[StringDictionary[String | Double | Boolean]]              = js.native
-    var executablePath: js.UndefOr[String] = js.native
-    //    var firefoxUserPrefs: js.UndefOr[StringDictionary[String | Double | Boolean]] = js.native
-    var handleSIGHUP: js.UndefOr[Boolean]                         = js.native
-    var handleSIGINT: js.UndefOr[Boolean]                         = js.native
-    var handleSIGTERM: js.UndefOr[Boolean]                        = js.native
-    var headless: js.UndefOr[Boolean]                             = js.native
-    var ignoreDefaultArgs: js.UndefOr[Boolean | js.Array[String]] = js.native
-    //    var logger: js.UndefOr[Logger]                                                = js.native
-    //    var proxy: js.UndefOr[Bypass]                                                 = js.native
+  trait LaunchOptions extends js.Object {
+    var _videosPath: js.UndefOr[String]
+    var args: js.UndefOr[js.Array[String]]
+    var chromiumSandbox: js.UndefOr[Boolean]
+    var devtools: js.UndefOr[Boolean]
+    var downloadsPath: js.UndefOr[String]
+    var executablePath: js.UndefOr[String]
+    var handleSIGHUP: js.UndefOr[Boolean]
+    var handleSIGINT: js.UndefOr[Boolean]
+    var handleSIGTERM: js.UndefOr[Boolean]
+    var headless: js.UndefOr[Boolean]
+    var ignoreDefaultArgs: js.UndefOr[Boolean | js.Array[String]]
     var slowMo: js.UndefOr[Double]  = js.native
     var timeout: js.UndefOr[Double] = js.native
   }
@@ -49,6 +44,30 @@ object Facade {
 
     def apply(headless: Boolean, slowMo: Double): LaunchOptions =
       js.Dynamic.literal(headless = headless).asInstanceOf[LaunchOptions]
+  }
+
+  @js.native
+  trait ViewportSize extends js.Object {
+    val height: Double
+    val width: Double
+  }
+  object ViewportSize {
+    def apply(height: Double, width: Double): ViewportSize = js.Dynamic.literal(height = height, width = width).asInstanceOf[ViewportSize]
+  }
+
+  @js.native
+  trait BrowserContextOptions extends js.Object {
+    val ignoreHTTPSErrors: js.UndefOr[Boolean]
+    val viewportSize: js.UndefOr[ViewportSize]
+  }
+
+  object BrowserContextOptions {
+
+    def apply(ignoreHTTPSErrors: Boolean): BrowserContextOptions =
+      js.Dynamic.literal(ignoreHTTPSErrors = ignoreHTTPSErrors).asInstanceOf[BrowserContextOptions]
+
+    def apply(ignoreHTTPSErrors: Boolean, viewportSize: ViewportSize): BrowserContextOptions =
+      js.Dynamic.literal(ignoreHTTPSErrors = ignoreHTTPSErrors, viewportSize = viewportSize).asInstanceOf[BrowserContextOptions]
   }
 
   @js.native
@@ -90,18 +109,28 @@ object Facade {
   @js.native
   trait BrowserJS extends js.Object {
 
+    @JSName("close")
+    def closeJS(): js.Promise[Unit] = js.native
+
     @JSName("newContext")
     def newContextJS(): js.Promise[BrowserContextJS] = js.native
+
+    @JSName("newContext")
+    def newContextJS(contextOptions: BrowserContextOptions): js.Promise[BrowserContextJS] = js.native
   }
 
   trait Browser {
+    def close(): Future[Unit]
     def newContext(): Future[BrowserContext]
+    def newContext(contextOptions: BrowserContextOptions): Future[BrowserContext]
   }
 
   object Browser {
 
     implicit class Friendly(raw: BrowserJS)(implicit ec: ExecutionContext) extends Browser {
+      def close(): Future[Unit] = raw.closeJS().toFuture
       def newContext(): Future[BrowserContext] = raw.newContextJS().map(x => x: BrowserContext)
+      def newContext(contextOptions: BrowserContextOptions): Future[BrowserContext] = raw.newContextJS(contextOptions).map(x => x: BrowserContext)
     }
   }
 
@@ -128,12 +157,11 @@ object Facade {
   object browsers extends js.Object {
     val chromium: BrowserTypeJS = js.native
     val firefox: BrowserTypeJS = js.native
-    val safari: BrowserTypeJS = js.native
+    val webkit: BrowserTypeJS = js.native
   }
 
   @js.native
-  @JSImport("playwright", "ElementHandle")
-  class ElementHandleJS extends js.Object {
+  trait ElementHandleJS extends js.Object {
 
     @JSName("click")
     def clickJS(selector: String): js.Promise[Unit] = js.native
@@ -163,8 +191,7 @@ object Facade {
   }
 
   @js.native
-  @JSImport("playwright", "Page")
-  class PageJS extends js.Object {
+  trait PageJS extends js.Object {
 
     def $(s: String): js.UndefOr[Element] = js.native
 
