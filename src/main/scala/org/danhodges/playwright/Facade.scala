@@ -1,8 +1,7 @@
-package playwright
+package org.danhodges.playwright
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
-import scala.scalajs.js.Thenable.Implicits.thenable2future
 import scala.scalajs.js.annotation.{JSImport, JSName}
 import scala.scalajs.js.|
 

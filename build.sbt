@@ -1,9 +1,10 @@
 name := "scalajs-playwright"
 
-version := "0.1"
+organization := "org.danhodges"
+
+version := "0.3"
 
 scalaVersion := "2.13.3"
-
 
 lazy val root = project
   .in(file("."))
@@ -14,9 +15,9 @@ lazy val root = project
     bintrayRepository := "maven",
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
     libraryDependencies ++= Seq(
-      "org.scala-js"  %%% "scalajs-dom" % "1.0.0",
+      "org.scala-js" %%% "scalajs-dom" % "1.0.0"
     ),
     name := "root",
     bintrayReleaseOnPublish := !isSnapshot.value,
-    publishMavenStyle := true,
+    publishMavenStyle := true
   )
