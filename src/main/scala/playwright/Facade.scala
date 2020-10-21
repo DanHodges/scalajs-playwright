@@ -60,7 +60,7 @@ object Facade {
   @js.native
   trait BrowserContextOptions extends js.Object {
     val ignoreHTTPSErrors: js.UndefOr[Boolean]
-    val viewportSize: js.UndefOr[ViewportSize]
+    val viewport: js.UndefOr[ViewportSize]
   }
 
   object BrowserContextOptions {
@@ -68,9 +68,9 @@ object Facade {
     def apply(ignoreHTTPSErrors: Boolean): BrowserContextOptions =
       js.Dynamic.literal(ignoreHTTPSErrors = ignoreHTTPSErrors).asInstanceOf[BrowserContextOptions]
 
-    def apply(ignoreHTTPSErrors: Boolean, viewportSize: ViewportSize): BrowserContextOptions =
+    def apply(ignoreHTTPSErrors: Boolean, viewport: ViewportSize): BrowserContextOptions =
       js.Dynamic
-        .literal(ignoreHTTPSErrors = ignoreHTTPSErrors, viewportSize = viewportSize)
+        .literal(ignoreHTTPSErrors = ignoreHTTPSErrors, viewport = viewport)
         .asInstanceOf[BrowserContextOptions]
   }
 
