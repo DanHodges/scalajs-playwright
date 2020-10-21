@@ -221,14 +221,12 @@ object Facade {
     @JSName("click")
     def clickJS(selector: String): js.Promise[Unit] = js.native
 
-    @JSName("waitForSelector")
-    def waitForSelectorJS(selector: String): js.Promise[ElementHandleJS] = js.native
-
     @JSName("goto")
     def gotoJS(selector: String): js.Promise[Unit] = js.native
 
     @JSName("title")
     def titleJS(): js.Promise[String] = js.native
+
     @JSName("waitForSelector")
     def waitForSelectorJS(selector: String, fill: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
   }
@@ -240,8 +238,6 @@ object Facade {
     def fill(selector: String, value: String): Future[Unit]
 
     def click(selector: String): Future[Unit]
-
-    def waitForSelector(selector: String): Future[ElementHandle]
 
     def goto(path: String): Future[Unit]
 
@@ -261,8 +257,6 @@ object Facade {
 
       def click(selector: String): Future[Unit] = raw.clickJS(selector).toFuture
 
-      def waitForSelector(selector: String): Future[ElementHandle] =
-        raw.waitForSelectorJS(selector).map(x => x: ElementHandle)
 
       def goto(path: String): Future[Unit] = raw.gotoJS(path).toFuture
 
