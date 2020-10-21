@@ -50,8 +50,11 @@ object Facade {
     val height: Double
     val width: Double
   }
+
   object ViewportSize {
-    def apply(height: Double, width: Double): ViewportSize = js.Dynamic.literal(height = height, width = width).asInstanceOf[ViewportSize]
+
+    def apply(height: Double, width: Double): ViewportSize =
+      js.Dynamic.literal(height = height, width = width).asInstanceOf[ViewportSize]
   }
 
   @js.native
@@ -66,7 +69,9 @@ object Facade {
       js.Dynamic.literal(ignoreHTTPSErrors = ignoreHTTPSErrors).asInstanceOf[BrowserContextOptions]
 
     def apply(ignoreHTTPSErrors: Boolean, viewportSize: ViewportSize): BrowserContextOptions =
-      js.Dynamic.literal(ignoreHTTPSErrors = ignoreHTTPSErrors, viewportSize = viewportSize).asInstanceOf[BrowserContextOptions]
+      js.Dynamic
+        .literal(ignoreHTTPSErrors = ignoreHTTPSErrors, viewportSize = viewportSize)
+        .asInstanceOf[BrowserContextOptions]
   }
 
   @js.native
@@ -123,9 +128,11 @@ object Facade {
   object Browser {
 
     implicit class Friendly(raw: BrowserJS)(implicit ec: ExecutionContext) extends Browser {
-      def close(): Future[Unit] = raw.closeJS().map(x => x: Unit)
+      def close(): Future[Unit]                = raw.closeJS()
       def newContext(): Future[BrowserContext] = raw.newContextJS().map(x => x: BrowserContext)
-      def newContext(contextOptions: BrowserContextOptions): Future[BrowserContext] = raw.newContextJS(contextOptions).map(x => x: BrowserContext)
+
+      def newContext(contextOptions: BrowserContextOptions): Future[BrowserContext] =
+        raw.newContextJS(contextOptions).map(x => x: BrowserContext)
     }
   }
 
@@ -151,8 +158,8 @@ object Facade {
   @JSImport("playwright", JSImport.Namespace)
   object browsers extends js.Object {
     val chromium: BrowserTypeJS = js.native
-    val firefox: BrowserTypeJS = js.native
-    val webkit: BrowserTypeJS = js.native
+    val firefox: BrowserTypeJS  = js.native
+    val webkit: BrowserTypeJS   = js.native
   }
 
   @js.native
@@ -189,6 +196,41 @@ object Facade {
 
   }
 
+  @js.native
+  trait ResponseJS extends js.Object {
+//    @JSName("body")
+//    def bodyJS(): js.Promise[Buffer] = js.native
+//    @JSName("finished")
+//    def finishedJS(): js.Promise[js.UndefOr[Error]]
+
+//    @JSName("json")
+//    def jsonJS(): js.Promise[Serializable]
+
+    def ok(): Boolean = js.native
+
+    def status(): Double = js.native
+
+    def statusText(): String = js.native
+
+    def url(): String = js.native
+  }
+
+  trait Response {
+    def ok: Boolean
+    def status: Double
+    def statusText: String
+    def url: String
+  }
+
+  object Response {
+    implicit class Friendly(raw: ResponseJS) extends Response {
+      def ok: Boolean        = raw.ok()
+      def status: Double     = raw.status()
+      def statusText: String = raw.statusText()
+      def url: String        = raw.url()
+    }
+  }
+
   trait ElementHandle {
 
     def find(s: String): Future[Option[ElementHandle]]
@@ -206,18 +248,21 @@ object Facade {
   object ElementHandle {
 
     implicit class Friendly(raw: ElementHandleJS)(implicit ec: ExecutionContext) extends ElementHandle {
-      def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
-      def innerHTML(): Future[String]                         = raw.innerHTMLJS().map(x => x: String)
-      def innerText(): Future[String]                         = raw.innerTextJS().map(x => x: String)
-      def textContent(): Future[String]                         = raw.textContentJS().map(x => x: String)
-      def textContent(selector: String): Future[String]                         = raw.textContentJS(selector).map(x => x: String)
+      def find(s: String): Future[Option[ElementHandle]]     = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
+      def innerHTML(): Future[String]                        = raw.innerHTMLJS().map(x => x: String)
+      def innerText(): Future[String]                        = raw.innerTextJS().map(x => x: String)
+      def textContent(): Future[String]                      = raw.textContentJS().map(x => x: String)
+      def textContent(selector: String): Future[String]      = raw.textContentJS(selector).map(x => x: String)
       def getAttribute(name: String): Future[Option[String]] = raw.getAttributeJS(name).map(x => x.toOption)
 
-      def click(selector: String): Future[Unit]                         = raw.clickJS(selector).map(x => x: Unit)
-      def fill(selector: String, content: String): Future[Unit]         = raw.fillJS(selector, content).map(x => x: Unit)
+      def click(selector: String): Future[Unit]                 = raw.clickJS(selector)
+      def fill(selector: String, content: String): Future[Unit] = raw.fillJS(selector, content)
 
-      def waitForSelector(selector: String): Future[Option[ElementHandle]] = raw.waitForSelectorJS(selector).map(x => x.toOption.map(x => x: ElementHandle))
-      def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] = raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
+      def waitForSelector(selector: String): Future[Option[ElementHandle]] =
+        raw.waitForSelectorJS(selector).map(x => x.toOption.map(x => x: ElementHandle))
+
+      def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
+        raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
     }
   }
 
@@ -233,7 +278,7 @@ object Facade {
     def clickJS(selector: String): js.Promise[Unit] = js.native
 
     @JSName("goto")
-    def gotoJS(selector: String): js.Promise[Unit] = js.native
+    def gotoJS(selector: String): js.Promise[js.UndefOr[ResponseJS]] = js.native
 
     @JSName("title")
     def titleJS(): js.Promise[String] = js.native
@@ -271,7 +316,7 @@ object Facade {
 
     def textContent(selector: String): Future[String]
 
-    def goto(path: String): Future[Unit]
+    def goto(path: String): Future[Option[Response]]
 
     def getAttribute(selector: String, name: String): Future[Option[String]]
 
@@ -293,27 +338,30 @@ object Facade {
 
       def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
 
-      def fill(selector: String, value: String): Future[Unit] = raw.fillJS(selector, value).map(x => x: Unit)
+      def fill(selector: String, value: String): Future[Unit] = raw.fillJS(selector, value)
 
-      def click(selector: String): Future[Unit] = raw.clickJS(selector).map(x => x: Unit)
+      def click(selector: String): Future[Unit] = raw.clickJS(selector)
 
-      def textContent(): Future[String]                         = raw.textContentJS().map(x => x: String)
+      def textContent(): Future[String] = raw.textContentJS().map(x => x: String)
 
-      def textContent(selector: String): Future[String]                         = raw.textContentJS(selector).map(x => x: String)
+      def textContent(selector: String): Future[String] = raw.textContentJS(selector).map(x => x: String)
 
-      def goto(path: String): Future[Unit] = raw.gotoJS(path).map(x => x: Unit)
+      def goto(path: String): Future[Option[Response]] = raw.gotoJS(path).map(_.toOption.map(x => x: Response))
 
-      def getAttribute(selector: String, name: String): Future[Option[String]] = raw.getAttributeJS(selector, name).map(x => x.toOption)
+      def getAttribute(selector: String, name: String): Future[Option[String]] =
+        raw.getAttributeJS(selector, name).map(x => x.toOption)
 
-      def `type`(selector: String, text: String): Future[Unit] = raw.`type`(selector, text).map(x => x: Unit)
+      def `type`(selector: String, text: String): Future[Unit] = raw.`type`(selector, text)
 
-      def press(selector: String, text: String): Future[Unit] = raw.press(selector, text).map(x => x: Unit)
+      def press(selector: String, text: String): Future[Unit] = raw.press(selector, text)
 
       def title(): Future[String] = raw.titleJS().map(x => x: String)
 
-      def waitForSelector(selector: String): Future[Option[ElementHandle]] = raw.waitForSelectorJS(selector).map(x => x.toOption.map(x => x: ElementHandle))
+      def waitForSelector(selector: String): Future[Option[ElementHandle]] =
+        raw.waitForSelectorJS(selector).map(x => x.toOption.map(x => x: ElementHandle))
 
-      def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] = raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
+      def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
+        raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
     }
   }
 }
