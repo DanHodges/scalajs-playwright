@@ -248,21 +248,23 @@ object Facade {
   object ElementHandle {
 
     implicit class Friendly(raw: ElementHandleJS)(implicit ec: ExecutionContext) extends ElementHandle {
-      def find(s: String): Future[Option[ElementHandle]]     = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
-      def innerHTML(): Future[String]                        = raw.innerHTMLJS().map(x => x: String)
-      def innerText(): Future[String]                        = raw.innerTextJS().map(x => x: String)
-      def textContent(): Future[String]                      = raw.textContentJS().map(x => x: String)
-      def textContent(selector: String): Future[String]      = raw.textContentJS(selector).map(x => x: String)
-      def getAttribute(name: String): Future[Option[String]] = raw.getAttributeJS(name).map(x => x.toOption)
+      def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
+      def innerHTML(): Future[String]                    = raw.innerHTMLJS().map(x => x: String)
+      def innerText(): Future[String]                    = raw.innerTextJS().map(x => x: String)
+      def textContent(): Future[String]                  = raw.textContentJS().map(x => x: String)
+      def textContent(selector: String): Future[String]  = raw.textContentJS(selector).map(x => x: String)
+
+      def getAttribute(name: String): Future[Option[String]] =
+        raw.getAttributeJS(name).map(x => if (x == null) None else x.toOption)
 
       def click(selector: String): Future[Unit]                 = raw.clickJS(selector)
       def fill(selector: String, content: String): Future[Unit] = raw.fillJS(selector, content)
 
       def waitForSelector(selector: String): Future[Option[ElementHandle]] =
-        raw.waitForSelectorJS(selector).map(x => x.toOption.map(x => x: ElementHandle))
+        raw.waitForSelectorJS(selector).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
 
       def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
-        raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
+        raw.waitForSelectorJS(selector, fill).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
     }
   }
 
@@ -336,7 +338,8 @@ object Facade {
 
     implicit class Friendly(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
 
-      def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
+      def find(s: String): Future[Option[ElementHandle]] =
+        raw.$(s).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
 
       def fill(selector: String, value: String): Future[Unit] = raw.fillJS(selector, value)
 
@@ -346,10 +349,11 @@ object Facade {
 
       def textContent(selector: String): Future[String] = raw.textContentJS(selector).map(x => x: String)
 
-      def goto(path: String): Future[Option[Response]] = raw.gotoJS(path).map(_.toOption.map(x => x: Response))
+      def goto(path: String): Future[Option[Response]] =
+        raw.gotoJS(path).map(x => if (x == null) None else x.toOption.map(r => r: Response))
 
       def getAttribute(selector: String, name: String): Future[Option[String]] =
-        raw.getAttributeJS(selector, name).map(x => x.toOption)
+        raw.getAttributeJS(selector, name).map(x => if (x == null) None else x.toOption)
 
       def `type`(selector: String, text: String): Future[Unit] = raw.`type`(selector, text)
 
@@ -358,10 +362,10 @@ object Facade {
       def title(): Future[String] = raw.titleJS().map(x => x: String)
 
       def waitForSelector(selector: String): Future[Option[ElementHandle]] =
-        raw.waitForSelectorJS(selector).map(x => x.toOption.map(x => x: ElementHandle))
+        raw.waitForSelectorJS(selector).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
 
       def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
-        raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
+        raw.waitForSelectorJS(selector, fill).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
     }
   }
 }
