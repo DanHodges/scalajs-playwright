@@ -5,7 +5,6 @@ import scala.scalajs.js
 import scala.scalajs.js.Thenable.Implicits.thenable2future
 import scala.scalajs.js.annotation.{JSImport, JSName}
 import scala.scalajs.js.|
-import org.scalajs.dom.Element
 
 object Facade {
 
@@ -102,10 +101,6 @@ object Facade {
     }
   }
 
-  trait CDPSession extends js.Object
-  trait Categories extends js.Object
-  trait Buffer     extends js.Object
-
   @js.native
   trait BrowserJS extends js.Object {
 
@@ -163,6 +158,20 @@ object Facade {
   @js.native
   trait ElementHandleJS extends js.Object {
 
+    def $(s: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
+
+    @JSName("innerHTML")
+    def innerHTMLJS(): js.Promise[String] = js.native
+
+    @JSName("innerText")
+    def innerTextJS(): js.Promise[String] = js.native
+
+    @JSName("textContent")
+    def textContentJS(): js.Promise[String] = js.native
+
+    @JSName("getAttribute")
+    def getAttributeJS(name: String): js.Promise[js.UndefOr[String]] = js.native
+
     @JSName("click")
     def clickJS(selector: String): js.Promise[Unit] = js.native
 
@@ -170,30 +179,41 @@ object Facade {
     def fillJS(selector: String, content: String): js.Promise[Unit] = js.native
 
     @JSName("waitForSelector")
-    def waitForSelectorJS(selector: String, fill: String): js.Promise[Unit] = js.native
+    def waitForSelectorJS(selector: String, fill: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
   }
 
   trait ElementHandle {
 
+    def find(s: String): Future[Option[ElementHandle]]
+    def innerText(): Future[String]
+    def innerHTML(): Future[String]
+    def textContent(): Future[String]
+    def getAttribute(name: String): Future[Option[String]]
     def click(selector: String): Future[Unit]
     def fill(selector: String, content: String): Future[Unit]
-    def waitForSelector(selector: String, fill: String): Future[Unit]
+    def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]]
   }
 
   object ElementHandle {
 
     implicit class Friendly(raw: ElementHandleJS)(implicit ec: ExecutionContext) extends ElementHandle {
+      def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
+      def innerHTML(): Future[String]                         = raw.innerHTMLJS().toFuture
+      def innerText(): Future[String]                         = raw.innerTextJS().toFuture
+      def textContent(): Future[String]                         = raw.textContentJS().toFuture
+      def getAttribute(name: String): Future[Option[String]] = raw.getAttributeJS(name).map(x => x.toOption)
+
       def click(selector: String): Future[Unit]                         = raw.clickJS(selector).toFuture
       def fill(selector: String, content: String): Future[Unit]         = raw.fillJS(selector, content).toFuture
-      def waitForSelector(selector: String, fill: String): Future[Unit] = raw.waitForSelectorJS(selector, fill).toFuture
+      def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] = raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
     }
   }
 
   @js.native
   trait PageJS extends js.Object {
 
-    def $(s: String): js.UndefOr[Element] = js.native
+    def $(s: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
     @JSName("fill")
     def fillJS(selector: String, value: String): js.Promise[Unit] = js.native
@@ -209,11 +229,13 @@ object Facade {
 
     @JSName("title")
     def titleJS(): js.Promise[String] = js.native
+    @JSName("waitForSelector")
+    def waitForSelectorJS(selector: String, fill: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
   }
 
   trait Page {
 
-    def find(s: String): Option[Element]
+    def find(s: String): Future[Option[ElementHandle]]
 
     def fill(selector: String, value: String): Future[Unit]
 
@@ -225,13 +247,15 @@ object Facade {
 
     def title(): Future[String]
 
+    def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]]
+
   }
 
   object Page {
 
     implicit class Friendly(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
 
-      def find(s: String): Option[Element] = raw.$(s).toOption
+      def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
 
       def fill(selector: String, value: String): Future[Unit] = raw.fillJS(selector, value).toFuture
 
@@ -243,6 +267,8 @@ object Facade {
       def goto(path: String): Future[Unit] = raw.gotoJS(path).toFuture
 
       def title(): Future[String] = raw.titleJS().toFuture
+
+      def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] = raw.waitForSelectorJS(selector, fill).map(x => x.toOption.map(x => x: ElementHandle))
     }
   }
 }
