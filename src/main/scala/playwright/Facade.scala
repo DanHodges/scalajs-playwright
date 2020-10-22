@@ -1,4 +1,4 @@
-package org.danhodges.playwright
+package playwright
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
