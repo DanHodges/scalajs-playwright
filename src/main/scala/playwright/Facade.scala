@@ -2,6 +2,7 @@ package playwright
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
+import scala.scalajs.js.JSConverters.JSRichIterableOnce
 import scala.scalajs.js.Thenable.Implicits.thenable2future
 import scala.scalajs.js.annotation.{JSImport, JSName}
 import scala.scalajs.js.|
@@ -300,6 +301,15 @@ object Facade {
     @JSName("waitForSelector")
     def waitForSelectorJS(selector: String, fill: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
+    @JSName("selectOption")
+    def selectOptionJS(selector: String, value: String): js.Promise[js.Array[String]] = js.native
+
+    @JSName("selectOption")
+    def selectOptionJS(selector: String, values: js.Array[String]): js.Promise[js.Array[String]] = js.native
+
+    @JSName("selectOption")
+    def selectOptionJS(selector: String, label: js.Dynamic): js.Promise[js.Array[String]] = js.native
+
     @JSName("type")
     def `type`(selector: String, text: String): js.Promise[Unit] = js.native
 
@@ -328,6 +338,12 @@ object Facade {
 
     def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]]
 
+    def selectOption(selector: String, value: String): Future[Seq[String]]
+
+    def selectMultipleOptions(selector: String, values: Seq[String]): Future[Seq[String]]
+
+    def selectOptionByLabel(selector: String, label: String): Future[Seq[String]]
+
     def `type`(selector: String, text: String): Future[Unit]
 
     def press(selector: String, text: String): Future[Unit]
@@ -354,6 +370,15 @@ object Facade {
 
       def getAttribute(selector: String, name: String): Future[Option[String]] =
         raw.getAttributeJS(selector, name).map(x => if (x == null) None else x.toOption)
+
+      def selectOption(selector: String, value: String): Future[Seq[String]] =
+        raw.selectOptionJS(selector, value).map(_.toSeq)
+
+      def selectMultipleOptions(selector: String, values: Seq[String]): Future[Seq[String]] =
+        raw.selectOptionJS(selector, values.toJSArray).map(_.toSeq)
+
+      def selectOptionByLabel(selector: String, label: String): Future[Seq[String]] =
+        raw.selectOptionJS(selector, js.Dynamic.literal(label = label)).map(_.toSeq)
 
       def `type`(selector: String, text: String): Future[Unit] = raw.`type`(selector, text)
 
