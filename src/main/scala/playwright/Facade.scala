@@ -11,8 +11,8 @@ object Facade {
 
   @js.native
   trait ConnectOptions extends js.Object {
-    var slowMo: js.UndefOr[Double]
     var headless: js.UndefOr[Boolean]
+    var slowMo: js.UndefOr[Double]
     var timeout: js.UndefOr[Double]
     var wsEndpoint: String
   }
