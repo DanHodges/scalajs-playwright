@@ -96,10 +96,15 @@ object Facade {
   }
 
   trait Mouse {
+    def click(x: Double, y: Double): Future[Unit]
     def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit]
+    def dblclick(x: Double, y: Double): Future[Unit]
     def dblclick(x: Double, y: Double, options: MouseDoubleClickOptions): Future[Unit]
+    def down(): Future[Unit]
     def down(options: MouseUpDownOptions): Future[Unit]
+    def move(x: Double, y: Double): Future[Unit]
     def move(x: Double, y: Double, options: MouseMoveOptions): Future[Unit]
+    def up(): Future[Unit]
     def up(options: MouseUpDownOptions): Future[Unit]
   }
 
