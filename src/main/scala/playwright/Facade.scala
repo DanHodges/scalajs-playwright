@@ -24,6 +24,101 @@ object Facade {
   }
 
   @js.native
+  trait MouseUpDownOptions extends js.Object {
+    var button: String // "left", "right", "middle"
+    var clickCount: Double
+  }
+
+  object MouseUpDownOptions {
+    val Default = js.Dynamic.literal(button = "left", clickCount = 1).asInstanceOf[MouseUpDownOptions]
+
+    def apply(button: String, clickCount: Double): MouseUpDownOptions =
+      js.Dynamic.literal(button = button, clickCount = clickCount).asInstanceOf[MouseUpDownOptions]
+  }
+
+  @js.native
+  trait MouseClickOptions extends js.Object {
+    var button: String // "left", "right", "middle"
+    var clickCount: Double
+    var delay: Double
+  }
+
+  object MouseClickOptions {
+    val Default = js.Dynamic.literal(button = "left", clickCount = 1, delay = 0).asInstanceOf[MouseClickOptions]
+
+    def apply(button: String, clickCount: Double, delay: Double): MouseClickOptions =
+      js.Dynamic.literal(button = button, clickCount = clickCount, delay = delay).asInstanceOf[MouseClickOptions]
+  }
+
+  @js.native
+  trait MouseDoubleClickOptions extends js.Object {
+    var button: String // "left", "right", "middle"
+    var delay: Double
+  }
+
+  object MouseDoubleClickOptions {
+    val Default = js.Dynamic.literal(button = "left", delay = 0).asInstanceOf[MouseDoubleClickOptions]
+
+    def apply(button: String, clickCount: Double, delay: Double): MouseDoubleClickOptions =
+      js.Dynamic.literal(button = button, delay = delay).asInstanceOf[MouseDoubleClickOptions]
+  }
+
+  @js.native
+  trait MouseMoveOptions extends js.Object {
+    var steps: Double
+  }
+
+  object MouseMoveOptions {
+    val Default = js.Dynamic.literal(steps = 1).asInstanceOf[MouseMoveOptions]
+
+    def apply(steps: Double): MouseMoveOptions =
+      js.Dynamic.literal(steps = 1).asInstanceOf[MouseMoveOptions]
+
+  }
+
+  @js.native
+  trait MouseJS extends js.Object {
+
+    @JSName("click")
+    def clickJS(x: Double, y: Double, options: MouseClickOptions): js.Promise[Unit] = js.native
+
+    @JSName("dblclick")
+    def dblclickJS(x: Double, y: Double, options: MouseDoubleClickOptions): js.Promise[Unit] = js.native
+
+    @JSName("down")
+    def downJS(options: MouseUpDownOptions): js.Promise[Unit] = js.native
+
+    @JSName("move")
+    def moveJS(x: Double, y: Double, options: MouseMoveOptions): js.Promise[Unit] = js.native
+
+    @JSName("up")
+    def upJS(options: MouseUpDownOptions): js.Promise[Unit] = js.native
+  }
+
+  trait Mouse {
+    def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit]
+    def dblclick(x: Double, y: Double, options: MouseDoubleClickOptions): Future[Unit]
+    def down(options: MouseUpDownOptions): Future[Unit]
+    def move(x: Double, y: Double, options: MouseMoveOptions): Future[Unit]
+    def up(options: MouseUpDownOptions): Future[Unit]
+  }
+
+  object Mouse {
+    implicit class Friendly(raw: MouseJS) extends Mouse {
+      def click(x: Double, y: Double): Future[Unit]                                      = raw.clickJS(x, y, MouseClickOptions.Default)
+      def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit]          = raw.clickJS(x, y, options)
+      def dblclick(x: Double, y: Double): Future[Unit]                                   = raw.dblclickJS(x, y, MouseDoubleClickOptions.Default)
+      def dblclick(x: Double, y: Double, options: MouseDoubleClickOptions): Future[Unit] = raw.dblclickJS(x, y, options)
+      def down(): Future[Unit]                                                           = raw.downJS(MouseUpDownOptions.Default)
+      def down(options: MouseUpDownOptions): Future[Unit]                                = raw.downJS(options)
+      def move(x: Double, y: Double): Future[Unit]                                       = raw.moveJS(x, y, MouseMoveOptions.Default)
+      def move(x: Double, y: Double, options: MouseMoveOptions): Future[Unit]            = raw.moveJS(x, y, options)
+      def up(): Future[Unit]                                                             = raw.upJS(MouseUpDownOptions.Default)
+      def up(options: MouseUpDownOptions): Future[Unit]                                  = raw.upJS(options)
+    }
+  }
+
+  @js.native
   trait LaunchOptions extends js.Object {
     var _videosPath: js.UndefOr[String]
     var args: js.UndefOr[js.Array[String]]
@@ -314,6 +409,8 @@ object Facade {
     def `type`(selector: String, text: String): js.Promise[Unit] = js.native
 
     def press(selector: String, text: String): js.Promise[Unit] = js.native
+
+    def mouse(): Mouse = js.native
   }
 
   trait Page {
@@ -325,6 +422,8 @@ object Facade {
     def click(selector: String): Future[Unit]
 
     def textContent(): Future[String]
+
+    def mouse(): Mouse
 
     def textContent(selector: String): Future[String]
 
@@ -391,6 +490,8 @@ object Facade {
 
       def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
         raw.waitForSelectorJS(selector, fill).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
+
+      def mouse(): Mouse = raw.mouse()
     }
   }
 }
