@@ -109,7 +109,7 @@ object Facade {
   }
 
   object Mouse {
-    implicit class Friendly(raw: MouseJS) extends Mouse {
+    implicit class Baked(raw: MouseJS) extends Mouse {
       def click(x: Double, y: Double): Future[Unit]                                      = raw.clickJS(x, y, MouseClickOptions.Default)
       def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit]          = raw.clickJS(x, y, options)
       def dblclick(x: Double, y: Double): Future[Unit]                                   = raw.dblclickJS(x, y, MouseDoubleClickOptions.Default)
@@ -198,7 +198,7 @@ object Facade {
 
   object BrowserType {
 
-    implicit class Friendly(raw: BrowserTypeJS)(implicit ec: ExecutionContext) extends BrowserType {
+    implicit class Baked(raw: BrowserTypeJS)(implicit ec: ExecutionContext) extends BrowserType {
       def name(): String                                    = raw.name()
       def connect(options: ConnectOptions): Future[Browser] = raw.connectJS(options).map(x => x: Browser)
 
@@ -228,7 +228,7 @@ object Facade {
 
   object Browser {
 
-    implicit class Friendly(raw: BrowserJS)(implicit ec: ExecutionContext) extends Browser {
+    implicit class Baked(raw: BrowserJS)(implicit ec: ExecutionContext) extends Browser {
       def close(): Future[Unit]                = raw.closeJS()
       def newContext(): Future[BrowserContext] = raw.newContextJS().map(x => x: BrowserContext)
 
@@ -250,7 +250,7 @@ object Facade {
 
   object BrowserContext {
 
-    implicit class Friendly(raw: BrowserContextJS)(implicit ec: ExecutionContext) extends BrowserContext {
+    implicit class Baked(raw: BrowserContextJS)(implicit ec: ExecutionContext) extends BrowserContext {
       def newPage(): Future[Page] = raw.newPageJS().map(page => page: Page)
     }
   }
@@ -324,7 +324,7 @@ object Facade {
   }
 
   object Response {
-    implicit class Friendly(raw: ResponseJS) extends Response {
+    implicit class Baked(raw: ResponseJS) extends Response {
       def ok: Boolean        = raw.ok()
       def status: Double     = raw.status()
       def statusText: String = raw.statusText()
@@ -348,7 +348,7 @@ object Facade {
 
   object ElementHandle {
 
-    implicit class Friendly(raw: ElementHandleJS)(implicit ec: ExecutionContext) extends ElementHandle {
+    implicit class Baked(raw: ElementHandleJS)(implicit ec: ExecutionContext) extends ElementHandle {
       def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
       def innerHTML(): Future[String]                    = raw.innerHTMLJS().map(x => x: String)
       def innerText(): Future[String]                    = raw.innerTextJS().map(x => x: String)
@@ -367,6 +367,32 @@ object Facade {
       def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
         raw.waitForSelectorJS(selector, fill).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
     }
+  }
+
+  @js.native
+  trait HoverPosition extends js.Object {
+    var x: Double
+    var y: Double
+  }
+
+  object HoverPosition {
+    def apply(x: Double, y: Double): HoverPosition = js.Dynamic.literal(x = x, y = y).asInstanceOf[HoverPosition]
+  }
+
+  @js.native
+  trait HoverOptions extends js.Object {
+    var position: HoverPosition
+    var modifiers: js.Array[String]
+    var force: Boolean
+    var timeout: Double
+  }
+
+  object HoverOptions {
+
+    def apply(position: HoverPosition, modifiers: js.Array[String], force: Boolean, timeout: Double): HoverOptions =
+      js.Dynamic
+        .literal(position = position, modifiers = modifiers, force = force, timeout = timeout)
+        .asInstanceOf[HoverOptions]
   }
 
   @js.native
@@ -415,7 +441,13 @@ object Facade {
 
     def press(selector: String, text: String): js.Promise[Unit] = js.native
 
-    def mouse(): Mouse = js.native
+    def mouse: MouseJS = js.native
+
+    @JSName("hover")
+    def hoverJS(selector: String): js.Promise[Unit] = js.native
+
+    @JSName("hover")
+    def hoverJS(selector: String, options: HoverOptions): js.Promise[Unit] = js.native
   }
 
   trait Page {
@@ -428,7 +460,7 @@ object Facade {
 
     def textContent(): Future[String]
 
-    def mouse(): Mouse
+    def mouse: Mouse
 
     def textContent(selector: String): Future[String]
 
@@ -452,11 +484,15 @@ object Facade {
 
     def press(selector: String, text: String): Future[Unit]
 
+    def hover(selector: String): Future[Unit]
+
+    def hover(selector: String, options: HoverOptions): Future[Unit]
+
   }
 
   object Page {
 
-    implicit class Friendly(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
+    implicit class Baked(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
 
       def find(s: String): Future[Option[ElementHandle]] =
         raw.$(s).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
@@ -496,7 +532,11 @@ object Facade {
       def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
         raw.waitForSelectorJS(selector, fill).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
 
-      def mouse(): Mouse = raw.mouse()
+      def mouse: Mouse = raw.mouse
+
+      def hover(selector: String): Future[Unit] = raw.hoverJS(selector)
+
+      def hover(selector: String, options: HoverOptions): Future[Unit] = raw.hoverJS(selector, options)
     }
   }
 }
