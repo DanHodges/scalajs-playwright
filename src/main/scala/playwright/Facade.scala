@@ -295,6 +295,9 @@ object Facade {
     @JSName("waitForSelector")
     def waitForSelectorJS(selector: String, fill: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
+    @JSName("boundingBox")
+    def boundingBoxJS(): js.Promise[js.UndefOr[BoundingBox]] = js.native
+
   }
 
   @js.native
@@ -332,6 +335,13 @@ object Facade {
     }
   }
 
+  trait BoundingBox extends js.native {
+    def x: Double
+    def y: Double
+    def height: Double
+    def width: Double
+  }
+
   trait ElementHandle {
 
     def find(s: String): Future[Option[ElementHandle]]
@@ -340,6 +350,7 @@ object Facade {
     def textContent(): Future[String]
     def textContent(selector: String): Future[String]
     def getAttribute(name: String): Future[Option[String]]
+    def boundingBox(): Future[Option[BoundingBox]]
     def click(selector: String): Future[Unit]
     def fill(selector: String, content: String): Future[Unit]
     def waitForSelector(selector: String): Future[Option[ElementHandle]]
@@ -366,6 +377,9 @@ object Facade {
 
       def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]] =
         raw.waitForSelectorJS(selector, fill).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
+
+      def boundingBox(): Future[Option[BoundingBox]] =
+        raw.boundingBoxJS().map(x => if (x == null) None else x.toOption.map(x => x: BoundingBox))
     }
   }
 
