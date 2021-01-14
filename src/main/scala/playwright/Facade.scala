@@ -142,7 +142,7 @@ object Facade {
 
   object LaunchOptions {
 
-    def apply(headless: Boolean, slowMo: Double): LaunchOptions =
+    def apply(headless: Boolean, slowMo: Double, args: Array[String]): LaunchOptions =
       js.Dynamic.literal(headless = headless).asInstanceOf[LaunchOptions]
   }
 
