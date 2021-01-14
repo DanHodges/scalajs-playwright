@@ -2,7 +2,7 @@ name := "scalajs-playwright"
 
 organization := "com.github.danhodges"
 
-version := "0.7"
+version := "0.8"
 
 scalaVersion := "2.13.3"
 
