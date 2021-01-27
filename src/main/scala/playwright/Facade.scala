@@ -242,19 +242,23 @@ object Facade {
 
   @js.native
   trait BrowserContextJS extends js.Object {
+    @JSName("close")
+    def closeJS():js.Promise[Unit] = js.native
 
     @JSName("newPage")
     def newPageJS(): js.Promise[PageJS] = js.native
   }
 
   trait BrowserContext {
+    def close():Future[Unit]
     def newPage(): Future[Page]
   }
 
   object BrowserContext {
 
     implicit class Baked(raw: BrowserContextJS)(implicit ec: ExecutionContext) extends BrowserContext {
-      def newPage(): Future[Page] = raw.newPageJS().map(page => page: Page)
+      def close():Future[Unit] = raw.closeJS()
+      def newPage(): Future[Page] = raw.newPageJS().map[Page](x => x)
     }
   }
 
