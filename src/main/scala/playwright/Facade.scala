@@ -5,7 +5,7 @@ import scala.scalajs.js
 import scala.scalajs.js.JSConverters.JSRichIterableOnce
 import scala.scalajs.js.Thenable.Implicits.thenable2future
 import scala.scalajs.js.annotation.{JSImport, JSName}
-import scala.scalajs.js.|
+import scala.scalajs.js.{JSON, |}
 
 object Facade {
 
@@ -247,16 +247,27 @@ object Facade {
 
     @JSName("newPage")
     def newPageJS(): js.Promise[PageJS] = js.native
+    @JSName("addCookies")
+    def addCookiesJS(cookies:js.Array[js.Object]):Unit = js.native
+    @JSName("cookies")
+    def cookiesJS(urls:String*):js.Promise[js.Array[js.Object]] = js.native
   }
 
   trait BrowserContext {
     def close():Future[Unit]
     def newPage(): Future[Page]
+    def addCookies(json:String):Unit
+    def cookiesJSON(urls:String*):Future[String]
   }
 
   object BrowserContext {
 
     implicit class Baked(raw: BrowserContextJS)(implicit ec: ExecutionContext) extends BrowserContext {
+
+      override def addCookies(json: String): Unit = raw.addCookiesJS(JSON.parse(json).asInstanceOf[js.Array[js.Object]])
+
+      override def cookiesJSON(urls: String*): Future[String] = raw.cookiesJS(urls:_*).map[String](x => JSON.stringify(x))
+
       def close():Future[Unit] = raw.closeJS()
       def newPage(): Future[Page] = raw.newPageJS().map[Page](x => x)
     }
@@ -421,6 +432,9 @@ object Facade {
 
     def $(s: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
+    @JSName("context")
+    def contextJS():BrowserContextJS = js.native
+
     @JSName("fill")
     def fillJS(selector: String, value: String): js.Promise[Unit] = js.native
 
@@ -473,6 +487,8 @@ object Facade {
 
   trait Page {
 
+    def context():BrowserContext
+
     def find(s: String): Future[Option[ElementHandle]]
 
     def fill(selector: String, value: String): Future[Unit]
@@ -514,6 +530,8 @@ object Facade {
   object Page {
 
     implicit class Baked(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
+
+      def context():BrowserContext = raw.contextJS()
 
       def find(s: String): Future[Option[ElementHandle]] =
         raw.$(s).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
