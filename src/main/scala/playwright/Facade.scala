@@ -97,30 +97,50 @@ object Facade {
 
   trait Mouse {
     def click(x: Double, y: Double): Future[Unit]
+
     def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit]
+
     def dblclick(x: Double, y: Double): Future[Unit]
+
     def dblclick(x: Double, y: Double, options: MouseDoubleClickOptions): Future[Unit]
+
     def down(): Future[Unit]
+
     def down(options: MouseUpDownOptions): Future[Unit]
+
     def move(x: Double, y: Double): Future[Unit]
+
     def move(x: Double, y: Double, options: MouseMoveOptions): Future[Unit]
+
     def up(): Future[Unit]
+
     def up(options: MouseUpDownOptions): Future[Unit]
   }
 
   object Mouse {
+
     implicit class Baked(raw: MouseJS) extends Mouse {
-      def click(x: Double, y: Double): Future[Unit]                                      = raw.clickJS(x, y, MouseClickOptions.Default)
-      def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit]          = raw.clickJS(x, y, options)
-      def dblclick(x: Double, y: Double): Future[Unit]                                   = raw.dblclickJS(x, y, MouseDoubleClickOptions.Default)
+      def click(x: Double, y: Double): Future[Unit] = raw.clickJS(x, y, MouseClickOptions.Default)
+
+      def click(x: Double, y: Double, options: MouseClickOptions): Future[Unit] = raw.clickJS(x, y, options)
+
+      def dblclick(x: Double, y: Double): Future[Unit] = raw.dblclickJS(x, y, MouseDoubleClickOptions.Default)
+
       def dblclick(x: Double, y: Double, options: MouseDoubleClickOptions): Future[Unit] = raw.dblclickJS(x, y, options)
-      def down(): Future[Unit]                                                           = raw.downJS(MouseUpDownOptions.Default)
-      def down(options: MouseUpDownOptions): Future[Unit]                                = raw.downJS(options)
-      def move(x: Double, y: Double): Future[Unit]                                       = raw.moveJS(x, y, MouseMoveOptions.Default)
-      def move(x: Double, y: Double, options: MouseMoveOptions): Future[Unit]            = raw.moveJS(x, y, options)
-      def up(): Future[Unit]                                                             = raw.upJS(MouseUpDownOptions.Default)
-      def up(options: MouseUpDownOptions): Future[Unit]                                  = raw.upJS(options)
+
+      def down(): Future[Unit] = raw.downJS(MouseUpDownOptions.Default)
+
+      def down(options: MouseUpDownOptions): Future[Unit] = raw.downJS(options)
+
+      def move(x: Double, y: Double): Future[Unit] = raw.moveJS(x, y, MouseMoveOptions.Default)
+
+      def move(x: Double, y: Double, options: MouseMoveOptions): Future[Unit] = raw.moveJS(x, y, options)
+
+      def up(): Future[Unit] = raw.upJS(MouseUpDownOptions.Default)
+
+      def up(options: MouseUpDownOptions): Future[Unit] = raw.upJS(options)
     }
+
   }
 
   @js.native
@@ -136,7 +156,7 @@ object Facade {
     var handleSIGTERM: js.UndefOr[Boolean]
     var headless: js.UndefOr[Boolean]
     var ignoreDefaultArgs: js.UndefOr[Boolean | js.Array[String]]
-    var slowMo: js.UndefOr[Double]  = js.native
+    var slowMo: js.UndefOr[Double] = js.native
     var timeout: js.UndefOr[Double] = js.native
   }
 
@@ -194,20 +214,26 @@ object Facade {
 
   trait BrowserType {
     def name(): String
+
     def connect(options: ConnectOptions): Future[Browser]
+
     def launch(): Future[Browser]
+
     def launch(options: LaunchOptions): Future[Browser]
   }
 
   object BrowserType {
 
     implicit class Baked(raw: BrowserTypeJS)(implicit ec: ExecutionContext) extends BrowserType {
-      def name(): String                                    = raw.name()
+      def name(): String = raw.name()
+
       def connect(options: ConnectOptions): Future[Browser] = raw.connectJS(options).map(x => x: Browser)
 
-      def launch(): Future[Browser]                       = raw.launchJS().map(x => x: Browser)
+      def launch(): Future[Browser] = raw.launchJS().map(x => x: Browser)
+
       def launch(options: LaunchOptions): Future[Browser] = raw.launchJS(options).map(x => x: Browser)
     }
+
   }
 
   @js.native
@@ -225,39 +251,53 @@ object Facade {
 
   trait Browser {
     def close(): Future[Unit]
+
     def newContext(): Future[BrowserContext]
+
     def newContext(contextOptions: BrowserContextOptions): Future[BrowserContext]
   }
 
   object Browser {
 
     implicit class Baked(raw: BrowserJS)(implicit ec: ExecutionContext) extends Browser {
-      def close(): Future[Unit]                = raw.closeJS()
+      def close(): Future[Unit] = raw.closeJS()
+
       def newContext(): Future[BrowserContext] = raw.newContextJS().map(x => x: BrowserContext)
 
       def newContext(contextOptions: BrowserContextOptions): Future[BrowserContext] =
         raw.newContextJS(contextOptions).map(x => x: BrowserContext)
     }
+
   }
 
   @js.native
   trait BrowserContextJS extends js.Object {
     @JSName("close")
-    def closeJS():js.Promise[Unit] = js.native
+    def closeJS(): js.Promise[Unit] = js.native
 
     @JSName("newPage")
     def newPageJS(): js.Promise[PageJS] = js.native
+
     @JSName("addCookies")
-    def addCookiesJS(cookies:js.Array[js.Object]):Unit = js.native
+    def addCookiesJS(cookies: js.Array[js.Object]): Unit = js.native
+
+    @JSName("clearCookies")
+    def clearCookiesJS(): Unit = js.native
+
     @JSName("cookies")
-    def cookiesJS(urls:String*):js.Promise[js.Array[js.Object]] = js.native
+    def cookiesJS(urls: String*): js.Promise[js.Array[js.Object]] = js.native
   }
 
   trait BrowserContext {
-    def close():Future[Unit]
+    def close(): Future[Unit]
+
     def newPage(): Future[Page]
-    def addCookies(json:String):Unit
-    def cookiesJSON(urls:String*):Future[String]
+
+    def addCookies(json: String): Unit
+
+    def clearCookies(): Unit
+
+    def cookiesJSON(urls: String*): Future[String]
   }
 
   object BrowserContext {
@@ -266,19 +306,23 @@ object Facade {
 
       override def addCookies(json: String): Unit = raw.addCookiesJS(JSON.parse(json).asInstanceOf[js.Array[js.Object]])
 
-      override def cookiesJSON(urls: String*): Future[String] = raw.cookiesJS(urls:_*).map[String](x => JSON.stringify(x))
+      override def clearCookies(): Unit = raw.clearCookiesJS()
 
-      def close():Future[Unit] = raw.closeJS()
+      override def cookiesJSON(urls: String*): Future[String] = raw.cookiesJS(urls: _*).map[String](x => JSON.stringify(x))
+
+      def close(): Future[Unit] = raw.closeJS()
+
       def newPage(): Future[Page] = raw.newPageJS().map[Page](x => x)
     }
+
   }
 
   @js.native
   @JSImport("playwright", JSImport.Namespace)
   object browsers extends js.Object {
     val chromium: BrowserTypeJS = js.native
-    val firefox: BrowserTypeJS  = js.native
-    val webkit: BrowserTypeJS   = js.native
+    val firefox: BrowserTypeJS = js.native
+    val webkit: BrowserTypeJS = js.native
   }
 
   @js.native
@@ -320,13 +364,13 @@ object Facade {
 
   @js.native
   trait ResponseJS extends js.Object {
-//    @JSName("body")
-//    def bodyJS(): js.Promise[Buffer] = js.native
-//    @JSName("finished")
-//    def finishedJS(): js.Promise[js.UndefOr[Error]]
+    //    @JSName("body")
+    //    def bodyJS(): js.Promise[Buffer] = js.native
+    //    @JSName("finished")
+    //    def finishedJS(): js.Promise[js.UndefOr[Error]]
 
-//    @JSName("json")
-//    def jsonJS(): js.Promise[Serializable]
+    //    @JSName("json")
+    //    def jsonJS(): js.Promise[Serializable]
 
     def ok(): Boolean = js.native
 
@@ -339,39 +383,60 @@ object Facade {
 
   trait Response {
     def ok: Boolean
+
     def status: Double
+
     def statusText: String
+
     def url: String
   }
 
   object Response {
+
     implicit class Baked(raw: ResponseJS) extends Response {
-      def ok: Boolean        = raw.ok()
-      def status: Double     = raw.status()
+      def ok: Boolean = raw.ok()
+
+      def status: Double = raw.status()
+
       def statusText: String = raw.statusText()
-      def url: String        = raw.url()
+
+      def url: String = raw.url()
     }
+
   }
 
   trait BoundingBox extends js.native {
     def x: Double
+
     def y: Double
+
     def height: Double
+
     def width: Double
   }
 
   trait ElementHandle {
 
     def find(s: String): Future[Option[ElementHandle]]
+
     def innerText(): Future[String]
+
     def innerHTML(): Future[String]
+
     def textContent(): Future[String]
+
     def textContent(selector: String): Future[String]
+
     def getAttribute(name: String): Future[Option[String]]
+
     def boundingBox(): Future[Option[BoundingBox]]
+
     def click(selector: String): Future[Unit]
+
     def fill(selector: String, content: String): Future[Unit]
+
     def waitForSelector(selector: String): Future[Option[ElementHandle]]
+
     def waitForSelector(selector: String, fill: String): Future[Option[ElementHandle]]
   }
 
@@ -379,15 +444,20 @@ object Facade {
 
     implicit class Baked(raw: ElementHandleJS)(implicit ec: ExecutionContext) extends ElementHandle {
       def find(s: String): Future[Option[ElementHandle]] = raw.$(s).map(x => x.toOption.map(x => x: ElementHandle))
-      def innerHTML(): Future[String]                    = raw.innerHTMLJS().map(x => x: String)
-      def innerText(): Future[String]                    = raw.innerTextJS().map(x => x: String)
-      def textContent(): Future[String]                  = raw.textContentJS().map(x => x: String)
-      def textContent(selector: String): Future[String]  = raw.textContentJS(selector).map(x => x: String)
+
+      def innerHTML(): Future[String] = raw.innerHTMLJS().map(x => x: String)
+
+      def innerText(): Future[String] = raw.innerTextJS().map(x => x: String)
+
+      def textContent(): Future[String] = raw.textContentJS().map(x => x: String)
+
+      def textContent(selector: String): Future[String] = raw.textContentJS(selector).map(x => x: String)
 
       def getAttribute(name: String): Future[Option[String]] =
         raw.getAttributeJS(name).map(x => if (x == null) None else x.toOption)
 
-      def click(selector: String): Future[Unit]                 = raw.clickJS(selector)
+      def click(selector: String): Future[Unit] = raw.clickJS(selector)
+
       def fill(selector: String, content: String): Future[Unit] = raw.fillJS(selector, content)
 
       def waitForSelector(selector: String): Future[Option[ElementHandle]] =
@@ -399,6 +469,7 @@ object Facade {
       def boundingBox(): Future[Option[BoundingBox]] =
         raw.boundingBoxJS().map(x => if (x == null) None else x.toOption.map(x => x: BoundingBox))
     }
+
   }
 
   @js.native
@@ -432,8 +503,14 @@ object Facade {
 
     def $(s: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
+    @JSName("setViewportSize")
+    def setViewportSizeJS(viewportSize: ViewportSize):Unit = js.native
+
+    @JSName("close")
+    def closeJS(options: js.Object): Unit
+
     @JSName("context")
-    def contextJS():BrowserContextJS = js.native
+    def contextJS(): BrowserContextJS = js.native
 
     @JSName("fill")
     def fillJS(selector: String, value: String): js.Promise[Unit] = js.native
@@ -487,7 +564,11 @@ object Facade {
 
   trait Page {
 
-    def context():BrowserContext
+    def close(): Unit
+
+    def setViewportSize(width:Int, height:Int): Unit
+
+    def context(): BrowserContext
 
     def find(s: String): Future[Option[ElementHandle]]
 
@@ -531,7 +612,14 @@ object Facade {
 
     implicit class Baked(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
 
-      def context():BrowserContext = raw.contextJS()
+      override def close(): Unit = raw.closeJS(new js.Object {
+        val runBeforeUnload: Boolean = false
+      })
+
+
+      override def setViewportSize(width: Int, height: Int): Unit = raw.setViewportSizeJS(ViewportSize(height = height, width = width))
+
+      def context(): BrowserContext = raw.contextJS()
 
       def find(s: String): Future[Option[ElementHandle]] =
         raw.$(s).map(x => if (x == null) None else x.toOption.map(x => x: ElementHandle))
@@ -577,5 +665,7 @@ object Facade {
 
       def hover(selector: String, options: HoverOptions): Future[Unit] = raw.hoverJS(selector, options)
     }
+
   }
+
 }
