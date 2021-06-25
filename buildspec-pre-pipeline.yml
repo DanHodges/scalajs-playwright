@@ -1,0 +1,28 @@
+#
+# The pipeline (CodePipeline) needs access to the .git directory of the application to perform releases.
+# Currently (2019-02-26) CodePipeline when sourcing from Git does not include the .git directory in the file system
+#
+# This CodeBuild job is a work-around. On pushes to master, CodeBuild will run this buildspec which just zips up the
+# files (including .git directory) and puts them on S3. CodePipeline then gets is source action from S3 instead of Git.
+#
+# Flow:
+# Git (master) => Webhook shot to CodeBuild => Upload to S3
+#
+# S3 <= CodePipeline (checks on interval for S3 File Mod) => resume normal CodePipeline Actions
+#
+# build trigger
+---
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - git remote set-url origin git@github.com:/LifewayIT/scalajs-playwright-facade.git
+      - git checkout master
+      - git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+      - git config branch.master.remote origin
+      - git config branch.master.merge refs/heads/master
+      - git config user.email "aws.admin+content-platform@lifeway.com"
+      - git config user.name "AWS CodeBuild"
+      - zip -r scalajs-playwright-facade.zip .
+      - aws s3 cp scalajs-playwright-facade.zip s3://ctp-build-automation-artifacts/cs-scalajs-playwright-facade-git-clone/eventsourcing.zip

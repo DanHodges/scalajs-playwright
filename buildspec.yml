@@ -1,0 +1,12 @@
+
+---
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - sbt +clean +compile +test
+cache:
+  paths:
+    - '/root/.ivy2/**/*'
+    - '/root/.sbt/**/*'

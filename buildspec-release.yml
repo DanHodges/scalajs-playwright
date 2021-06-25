@@ -1,0 +1,29 @@
+#
+# This buildspec file runs after the buildspec.yml stage is successful on the CodePipeline run
+#
+#   This build job does the following steps:
+#
+#   1.) Runs the sbt release process
+#
+---
+version: 0.2
+
+env:
+  parameter-store:
+    BUILD_ENC_KEY: "/ctp/cicd/artifactory-diaspora-build-secret"
+
+
+phases:
+  pre_build:
+    commands:
+      - mkdir ~/.ssh
+      - ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - aws ssm get-parameter --name "/ctp-ci/team-writeonly/github-scalajs-playwright-facade-deploy-key" --output text --query Parameter.Value --with-decryption > ~/.ssh/id_rsa
+      - chmod 400 ~/.ssh/id_rsa
+  build:
+    commands:
+      - sbt "release with-defaults"
+cache:
+  paths:
+    - '/root/.ivy2/**/*'
+    - '/root/.sbt/**/*'

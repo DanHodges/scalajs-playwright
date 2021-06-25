@@ -1,0 +1,15 @@
+
+---
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo "Checking code formatting..."
+      - sbt scalafmtCheckAll
+      - echo "Running test coverage..."
+      - sbt +test testCoverage
+cache:
+  paths:
+    - '/root/.ivy2/**/*'
+    - '/root/.sbt/**/*'
