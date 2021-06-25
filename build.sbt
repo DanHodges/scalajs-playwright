@@ -8,16 +8,16 @@ scalaVersion := "2.13.4"
 
 organization := "com.lifeway.consumersolutions"
 
-resolvers ++= Seq[Resolver](
-    "Lifeway Repo Internal Libs" at "https://artifactory.prod.lifeway.com/artifactory/libs-release-local/",
-    "LifeWay Content Platform Artifactory" at "https://artifactory.prod.lifeway.com/artifactory/lifewayaccount/"
-)
+resolvers += "Artifactory" at "https://artifactory.prod.lifeway.com/artifactory/contentplatform/"
+
 credentials += Credentials(
     "Artifactory Realm",
     "artifactory.prod.lifeway.com",
     sys.env.getOrElse("ARTIFACTORY_LW_USER", "bad user"),
     sys.env.getOrElse("ARTIFACTORY_LW_KEY", "bad key")
 )
+
+publishMavenStyle := true
 
 publishTo := {
     if (version.value.trim.endsWith("SNAPSHOT"))
@@ -29,6 +29,7 @@ publishTo := {
     else
         Some("Artifactory Realm" at "https://artifactory.prod.lifeway.com/artifactory/contentplatform")
 }
+
 pomExtra := {
   <scm>
     <url>git@github.com:LifewayIT/scalajs-playwright-facade.git</url>
