@@ -156,7 +156,7 @@ object Facade {
     var handleSIGTERM: js.UndefOr[Boolean]
     var headless: js.UndefOr[Boolean]
     var ignoreDefaultArgs: js.UndefOr[Boolean | js.Array[String]]
-    var slowMo: js.UndefOr[Double] = js.native
+    var slowMo: js.UndefOr[Double]  = js.native
     var timeout: js.UndefOr[Double] = js.native
   }
 
@@ -272,6 +272,7 @@ object Facade {
 
   @js.native
   trait BrowserContextJS extends js.Object {
+
     @JSName("close")
     def closeJS(): js.Promise[Unit] = js.native
 
@@ -308,7 +309,8 @@ object Facade {
 
       override def clearCookies(): Unit = raw.clearCookiesJS()
 
-      override def cookiesJSON(urls: String*): Future[String] = raw.cookiesJS(urls: _*).map[String](x => JSON.stringify(x))
+      override def cookiesJSON(urls: String*): Future[String] =
+        raw.cookiesJS(urls: _*).map[String](x => JSON.stringify(x))
 
       def close(): Future[Unit] = raw.closeJS()
 
@@ -321,8 +323,8 @@ object Facade {
   @JSImport("playwright", JSImport.Namespace)
   object browsers extends js.Object {
     val chromium: BrowserTypeJS = js.native
-    val firefox: BrowserTypeJS = js.native
-    val webkit: BrowserTypeJS = js.native
+    val firefox: BrowserTypeJS  = js.native
+    val webkit: BrowserTypeJS   = js.native
   }
 
   @js.native
@@ -504,7 +506,7 @@ object Facade {
     def $(s: String): js.Promise[js.UndefOr[ElementHandleJS]] = js.native
 
     @JSName("setViewportSize")
-    def setViewportSizeJS(viewportSize: ViewportSize):Unit = js.native
+    def setViewportSizeJS(viewportSize: ViewportSize): Unit = js.native
 
     @JSName("close")
     def closeJS(options: js.Object): Unit
@@ -566,7 +568,7 @@ object Facade {
 
     def close(): Unit
 
-    def setViewportSize(width:Int, height:Int): Unit
+    def setViewportSize(width: Int, height: Int): Unit
 
     def context(): BrowserContext
 
@@ -612,12 +614,13 @@ object Facade {
 
     implicit class Baked(raw: PageJS)(implicit ec: ExecutionContext) extends Page {
 
-      override def close(): Unit = raw.closeJS(new js.Object {
-        val runBeforeUnload: Boolean = false
-      })
+      override def close(): Unit =
+        raw.closeJS(new js.Object {
+          val runBeforeUnload: Boolean = false
+        })
 
-
-      override def setViewportSize(width: Int, height: Int): Unit = raw.setViewportSizeJS(ViewportSize(height = height, width = width))
+      override def setViewportSize(width: Int, height: Int): Unit =
+        raw.setViewportSizeJS(ViewportSize(height = height, width = width))
 
       def context(): BrowserContext = raw.contextJS()
 
