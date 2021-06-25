@@ -25,4 +25,4 @@ phases:
       - git config user.email "aws.admin+content-platform@lifeway.com"
       - git config user.name "AWS CodeBuild"
       - zip -r scalajs-playwright-facade.zip .
-      - aws s3 cp scalajs-playwright-facade.zip s3://ctp-build-automation-artifacts/cs-scalajs-playwright-facade-git-clone/eventsourcing.zip
+      - aws s3 cp scalajs-playwright-facade.zip s3://ctp-build-automation-artifacts/cs-scalajs-playwright-facade-git-clone/facade.zip
